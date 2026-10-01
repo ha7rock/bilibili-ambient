@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bilibili Ambient</title>
+    <link rel="stylesheet" href="popup.css">
+    <script src="settings.js" defer></script>
+    <script src="popup.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div class="logo" aria-hidden="true"><span></span></div>
+      <div><h1>Bilibili Ambient</h1><p>让封面和视频的颜色照亮页面</p></div>
+      <label class="switch" title="启用氛围光">
+        <input id="enabled" type="checkbox" aria-label="启用氛围光" disabled>
+        <span></span>
+      </label>
+    </header>
+    <fieldset id="controls" disabled>
+      <legend class="sr-only">氛围光设置</legend>
+      <div class="setting">
+        <label for="scope">光照范围</label>
+        <select id="scope"><option value="page">整个页面背景</option><option value="post">仅媒体周围</option></select>
+      </div>
+      <div class="setting slider">
+        <div><label for="intensity">强度</label><output id="intensity-value" for="intensity">65%</output></div>
+        <input id="intensity" type="range" min="0" max="100" value="65">
+      </div>
+      <div class="setting slider">
+        <div><label for="blur">模糊</label><output id="blur-value" for="blur">56px</output></div>
+        <input id="blur" type="range" min="24" max="160" value="56">
+      </div>
+      <div class="setting slider">
+        <div><label for="spread">扩散</label><output id="spread-value" for="spread">75%</output></div>
+        <input id="spread" type="range" min="20" max="100" value="75">
+      </div>
+      <label class="toggle" title="首页、搜索、播放页推荐、动态、空间、直播卡片的封面与预览视频"><span>悬停卡片时发光</span><input id="cards" type="checkbox" checked></label>
+      <label class="toggle" title="播放页的视频持续向四周发光；网页全屏、全屏、小窗时自动关闭"><span>播放器氛围光</span><input id="player" type="checkbox" checked></label>
+      <div class="setting sub">
+        <label for="playerFit">播放器光源</label>
+        <select id="playerFit"><option value="edge">铺满播放器（光从播放器边框发出）</option><option value="content">按画面实际位置（与 X Ambient 原版相同）</option></select>
+      </div>
+      <label class="toggle" title="播放中按画面实时更新，最多每秒 12 次"><span>跟随视频颜色</span><input id="animateVideo" type="checkbox" checked></label>
+    </fieldset>
+    <button id="open-panel" class="open-panel" type="button">在页面上打开设置面板<kbd id="shortcut">Alt+Shift+B</kbd></button>
+    <div class="hint"><span class="dot"></span><p id="status" role="status">正在读取设置…</p><button id="reset" type="button" disabled>恢复默认</button></div>
+  </body>
+</html>

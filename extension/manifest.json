@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Bilibili Ambient 氛围光",
+  "version": "0.1.0",
+  "description": "悬停视频卡片时，让封面和预览的颜色柔和地照亮整个页面；播放页的播放器也会向四周发光。",
+  "permissions": ["storage"],
+  "icons": { "16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" },
+  "action": {
+    "default_title": "Bilibili Ambient",
+    "default_icon": { "16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png" },
+    "default_popup": "src/popup.html"
+  },
+  "background": { "service_worker": "src/background.js" },
+  "commands": {
+    "toggle-panel": {
+      "suggested_key": { "default": "Alt+Shift+B" },
+      "description": "在页面上打开 / 关闭氛围光设置面板"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.bilibili.com/*",
+        "https://search.bilibili.com/*",
+        "https://t.bilibili.com/*",
+        "https://space.bilibili.com/*",
+        "https://live.bilibili.com/*"
+      ],
+      "js": ["src/settings.js", "src/ambient-core.js", "src/content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
