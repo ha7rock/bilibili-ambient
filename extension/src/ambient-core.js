@@ -77,7 +77,13 @@
   function buildMediaMask(rects, viewport) {
     // This SVG describes only DOM rectangles; it contains no image or video pixels.
     const number = (value) => Math.round(value * 2) / 2;
-    const holes = rects.map((rect) => `<rect x="${number(rect.left)}" y="${number(rect.top)}" width="${number(rect.width)}" height="${number(rect.height)}" rx="${number(rect.radius || 0)}" fill="black"/>`).join("");
+    const holes = rects.map((rect) => {
+      const [x, y, w, h] = [rect.left, rect.top, rect.width, rect.height].map(number);
+      const cap = Math.min(w, h) / 2;
+      // Per-corner radii (top-left, top-right, bottom-right, bottom-left), so rounded media leave no square corners.
+      const [tl, tr, br, bl] = (rect.radii || Array(4).fill(rect.radius || 0)).map((r) => number(Math.min(cap, Math.max(0, r))));
+      return `<path d="M${x + tl} ${y}H${x + w - tr}A${tr} ${tr} 0 0 1 ${x + w} ${y + tr}V${y + h - br}A${br} ${br} 0 0 1 ${x + w - br} ${y + h}H${x + bl}A${bl} ${bl} 0 0 1 ${x} ${y + h - bl}V${y + tl}A${tl} ${tl} 0 0 1 ${x + tl} ${y}Z" fill="black"/>`;
+    }).join("");
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${viewport.width}" height="${viewport.height}" viewBox="0 0 ${viewport.width} ${viewport.height}"><defs><mask id="media" maskUnits="userSpaceOnUse" x="0" y="0" width="${viewport.width}" height="${viewport.height}"><rect width="100%" height="100%" fill="white"/>${holes}</mask></defs><rect width="100%" height="100%" fill="white" mask="url(#media)"/></svg>`;
     return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
   }

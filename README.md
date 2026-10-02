@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="../../releases"><img alt="Release" src="https://img.shields.io/badge/release-v0.1.0-fb7299"></a>
+  <a href="../../releases"><img alt="Release" src="https://img.shields.io/badge/release-v0.1.1-fb7299"></a>
   <img alt="Chrome Extension" src="https://img.shields.io/badge/Chrome-MV3%20扩展-00aeec">
   <img alt="Userscript" src="https://img.shields.io/badge/油猴-Tampermonkey%20%7C%20Violentmonkey-a77bff">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-green"></a>
@@ -99,7 +99,7 @@
 
 适用于 Chrome、Edge、Brave、Arc 等基于 Chromium 的浏览器（需支持 Manifest V3）。
 
-1. 打开本仓库的 [Releases](../../releases) 页面，找到标签为 **`extension-v…`** 的版本，下载 `bilibili-ambient-extension-v0.1.0.zip`。
+1. 打开本仓库的 [Releases](../../releases) 页面，找到标签为 **`extension-v…`** 的版本，下载 `bilibili-ambient-extension-v0.1.1.zip`。
 2. 解压，得到 `bilibili-ambient-extension` 文件夹（里面有 `manifest.json`）。
    > 请把文件夹放在一个**长期保留**的位置，Chrome 会一直从这里读取扩展，删掉文件夹扩展就会失效。
 3. 在地址栏打开 `chrome://extensions`（Edge 为 `edge://extensions`），打开右上角的 **开发者模式**。

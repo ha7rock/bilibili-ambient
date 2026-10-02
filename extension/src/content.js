@@ -39,7 +39,9 @@
   ].join(",");
   const PLAYER_AREA_SELECTOR = ".bpx-player-video-area, #live-player, .live-player-mounter";
   const AVATAR_SELECTOR = '[class*="avatar"], [class*="Avatar"], [class*="face"], .bili-dyn-item__avatar, .up-avatar';
-  const ROUNDED_SELECTOR = ".bili-video-card__image, .b-img, .v-img, .bili-dyn-card-video__cover, .bpx-player-video-area";
+  const INLINE_PREVIEW_SELECTOR = ".v-inline-player";
+  const MIN_PROTECTED = 56;   // px: smaller images are UI (avatars, icons), not media worth a hole in the light
+  const HUG = 4;              // px tolerance when matching a clipping ancestor to its media
 
   /* ------------------------------------------------------------------ */
   /* Renderer                                                           */
@@ -246,6 +248,7 @@
     const view = viewport();
     let best = null;
     for (const element of document.querySelectorAll(PLAYER_VIDEO_SELECTOR)) {
+      if (isInlinePreview(element)) continue;
       const area = element.closest(PLAYER_AREA_SELECTOR) || element;
       const container = element.closest(".bpx-player-container");
       const screen = container?.dataset.screen;
@@ -304,27 +307,66 @@
     return `${item.source.tagName}:${item.source.currentSrc || item.source.src || ""}:${Math.round(item.rect.width)}x${Math.round(item.rect.height)}:${Math.round(item.rect.left - item.fullRect.left)},${Math.round(item.rect.top - item.fullRect.top)}`;
   }
 
+  // Bilibili's hover previews are tiny bpx players living inside cards: they are card media, not "the player".
+  function isInlinePreview(element) {
+    return Boolean(element.closest(`${INLINE_PREVIEW_SELECTOR}, ${CARD_SELECTOR}`));
+  }
+
+  /** Corner radii [tl, tr, br, bl] of whatever visibly clips `element`: the element and every ancestor hugging its box. */
+  function holeRadii(element, rect, box) {
+    const radii = [0, 0, 0, 0];
+    for (let node = element; node && node !== document.body; node = node.parentElement) {
+      const r = node.getBoundingClientRect();
+      const hugs = Math.abs(r.left - box.left) <= HUG && Math.abs(r.top - box.top) <= HUG
+        && Math.abs(r.right - box.right) <= HUG && Math.abs(r.bottom - box.bottom) <= HUG;
+      if (!hugs) {
+        if (node === element) continue;
+        break;
+      }
+      const style = getComputedStyle(node);
+      const size = Math.min(r.width, r.height);
+      [style.borderTopLeftRadius, style.borderTopRightRadius, style.borderBottomRightRadius, style.borderBottomLeftRadius].forEach((value, i) => {
+        radii[i] = Math.max(radii[i], value.endsWith("%") ? size * parseFloat(value) / 100 : parseFloat(value) || 0);
+      });
+    }
+    // Sides cut off by a scroll container or the viewport keep square corners.
+    const top = rect.top > box.top + HUG, right = rect.right < box.right - HUG;
+    const bottom = rect.bottom < box.bottom - HUG, left = rect.left > box.left + HUG;
+    return [top || left ? 0 : radii[0], top || right ? 0 : radii[1], bottom || right ? 0 : radii[2], bottom || left ? 0 : radii[3]];
+  }
+
+  function isAvatarLike(element, rect, radii) {
+    if (element.closest(AVATAR_SELECTOR)) return true;
+    const half = Math.min(rect.width, rect.height) / 2;
+    return radii.every((r) => r >= half * 0.9);
+  }
+
   function protectedRects() {
     const rects = [];
     // In "edge" mode the whole player (letterbox included) stays unlit; in "content" mode only the picture does.
-    const areas = settings.playerFit === "edge" ? [...document.querySelectorAll(PLAYER_AREA_SELECTOR)] : [];
+    const areas = settings.playerFit === "edge"
+      ? [...document.querySelectorAll(PLAYER_AREA_SELECTOR)].filter((area) => !isInlinePreview(area))
+      : [];
     for (const area of areas) {
       const box = area.getBoundingClientRect();
       const rect = visibleRect(area, box, 8, 8);
-      if (rect) rects.push({ ...rect, radius: parseFloat(getComputedStyle(area).borderTopLeftRadius) || 0 });
+      if (rect) rects.push({ ...rect, radii: holeRadii(area, rect, box) });
     }
     for (const element of document.querySelectorAll("img, video, canvas")) {
       if (areas.some((area) => area.contains(element))) continue;
       const box = element.getBoundingClientRect();
-      if (box.width < 8 || box.height < 8) continue;
-      const picture = imageDescriptor(element, element, box, box)?.fullRect || box;
+      // Avatars, icons, emoji and badges are UI, not media: they take the light like everything else.
+      if (Math.min(box.width, box.height) < MIN_PROTECTED) continue;
+      // Inline previews keep their whole rounded box (letterbox included); other media only their visible picture.
+      const picture = element.tagName === "VIDEO" && isInlinePreview(element)
+        ? box
+        : imageDescriptor(element, element, box, box)?.fullRect || box;
       const rect = visibleRect(element, picture, 8, 8);
       if (!rect) continue;
-      const rounded = element.closest(ROUNDED_SELECTOR) || element;
-      const radiusValue = getComputedStyle(rounded).borderTopLeftRadius;
-      const radius = radiusValue.endsWith("%") ? Math.min(rect.width, rect.height) * parseFloat(radiusValue) / 100 : parseFloat(radiusValue) || 0;
       const letterboxed = Math.abs(picture.width - box.width) > 2 || Math.abs(picture.height - box.height) > 2;
-      rects.push({ ...rect, radius: letterboxed ? 0 : Math.min(radius, rect.width / 2, rect.height / 2) });
+      const radii = letterboxed ? [0, 0, 0, 0] : holeRadii(element, rect, box);
+      if (isAvatarLike(element, rect, radii)) continue;
+      rects.push({ ...rect, radii });
     }
     return rects;
   }
@@ -337,7 +379,7 @@
     let region;
     if (settings.scope === "page") {
       const rects = protectedRects();
-      const nextKey = `${view.width}:${view.height}:${rects.map((rect) => [rect.left, rect.top, rect.width, rect.height, rect.radius].map(Math.round).join(",")).join(";")}`;
+      const nextKey = `${view.width}:${view.height}:${rects.map((rect) => [rect.left, rect.top, rect.width, rect.height, ...rect.radii].map(Math.round).join(",")).join(";")}`;
       if (nextKey !== protectionKey) {
         light.style.maskImage = Core.buildMediaMask(rects, view);
         protectionKey = nextKey;

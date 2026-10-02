@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="../../releases"><img alt="Release" src="https://img.shields.io/badge/release-v0.1.0-fb7299"></a>
+  <a href="../../releases"><img alt="Release" src="https://img.shields.io/badge/release-v0.1.1-fb7299"></a>
   <img alt="Chrome Extension" src="https://img.shields.io/badge/Chrome-MV3%20extension-00aeec">
   <img alt="Userscript" src="https://img.shields.io/badge/userscript-Tampermonkey%20%7C%20Violentmonkey-a77bff">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-green"></a>
@@ -99,7 +99,7 @@ The Chinese name/tagline **流光溢彩** is a Chinese idiom meaning roughly "fl
 
 Works in Chrome, Edge, Brave, Arc and other Chromium browsers with Manifest V3.
 
-1. Go to [Releases](../../releases), pick the release tagged **`extension-v…`** and download `bilibili-ambient-extension-v0.1.0.zip`.
+1. Go to [Releases](../../releases), pick the release tagged **`extension-v…`** and download `bilibili-ambient-extension-v0.1.1.zip`.
 2. Unzip it to get the `bilibili-ambient-extension` folder (it contains `manifest.json`).
    > Keep the folder somewhere permanent — Chrome loads the extension from it, and deleting it disables the extension.
 3. Open `chrome://extensions` (`edge://extensions` in Edge) and turn on **Developer mode** (top right).
