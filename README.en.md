@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="../../releases"><img alt="Release" src="https://img.shields.io/badge/release-v0.1.1-fb7299"></a>
+  <a href="../../releases"><img alt="Release" src="https://img.shields.io/badge/release-v0.1.2-fb7299"></a>
   <img alt="Chrome Extension" src="https://img.shields.io/badge/Chrome-MV3%20extension-00aeec">
   <img alt="Userscript" src="https://img.shields.io/badge/userscript-Tampermonkey%20%7C%20Violentmonkey-a77bff">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-green"></a>
@@ -64,9 +64,9 @@ The Chinese name/tagline **流光溢彩** is a Chinese idiom meaning roughly "fl
 
 - 🎨 **Hover to glow** — home feed, search results, related videos, dynamics, user spaces and live cards; covers and hover-preview videos alike.
 - 📺 **Player bias light** — on video pages the player glows without hovering, following the picture at up to 12 fps; pausing and seeking update it too.
-- 🔀 **Two light-source modes** (most visible with vertical videos):
-  - **Fill the player** — light comes off the player's border; letterbox bars stay dark;
-  - **Follow the picture** — light comes off the picture itself and spills into the letterbox (same as the original X Ambient).
+- 🔀 **Two light-strip positions** (most visible with vertical / letterboxed videos, in both themes):
+  - **Along the player** (贴着播放器) — light comes off the player's border; letterbox bars stay dark;
+  - **Along the picture** (贴着画面) — light comes off the picture itself and spills into the letterbox (same as the original X Ambient).
 - 🌗 **Light & dark themes** — `screen` blending (glow) on dark pages, `multiply` (soft tint) on light pages, switching automatically with Bilibili's and the system theme.
 - 🎚️ **Adjustable** — intensity, blur, spread and lighting area; changes apply instantly and sync across tabs.
 - 🧠 **Gets out of the way** — off in web-fullscreen, fullscreen and mini-player; honours "reduce motion".
@@ -87,9 +87,9 @@ The Chinese name/tagline **流光溢彩** is a Chinese idiom meaning roughly "fl
   <img src="docs/images/demo-player.gif" width="49%" alt="Player ambient light">
 </p>
 
-**Light-source modes** (left: fill the player · right: follow the picture)
+**Light-strip position** (left: along the player · right: along the picture; top: light theme · bottom: dark theme)
 
-![Light-source modes](docs/images/player-modes.jpg)
+![Light-strip position](docs/images/player-modes.jpg)
 
 ## Installation
 
@@ -99,7 +99,7 @@ The Chinese name/tagline **流光溢彩** is a Chinese idiom meaning roughly "fl
 
 Works in Chrome, Edge, Brave, Arc and other Chromium browsers with Manifest V3.
 
-1. Go to [Releases](../../releases), pick the release tagged **`extension-v…`** and download `bilibili-ambient-extension-v0.1.1.zip`.
+1. Go to [Releases](../../releases), pick the release tagged **`extension-v…`** and download `bilibili-ambient-extension-v0.1.2.zip`.
 2. Unzip it to get the `bilibili-ambient-extension` folder (it contains `manifest.json`).
    > Keep the folder somewhere permanent — Chrome loads the extension from it, and deleting it disables the extension.
 3. Open `chrome://extensions` (`edge://extensions` in Edge) and turn on **Developer mode** (top right).
@@ -143,14 +143,17 @@ On any video page (`/video/…`) or live room, the player glows continuously:
 - Hovering a related-video card temporarily switches the light to that card, then back to the player;
 - Automatically off in **web-fullscreen / fullscreen / mini-player**.
 
-### 3. Light-source mode (vertical videos)
+### 3. Light-strip position (vertical videos)
 
-Vertical videos inside a wide player have letterbox bars on both sides — that's where the two modes differ:
+Vertical videos inside a wide player have letterbox bars on both sides (ultrawide videos: top and bottom) — that's where the two modes differ:
+
+- **Where:** in the extension popup it's **灯带位置** (light-strip position) right under *Player ambient light*; also in the in-page panel (`Alt+Shift+B`); for the userscript, in the *⚙️ 氛围光设置* panel.
+- Only selectable while *Player ambient light* is on; landscape videos have no bars, so both modes look the same there.
 
 | Mode | Result | Choose it if you want |
 | --- | --- | --- |
-| Fill the player (default) | The frame is stretched over the player area; light leaves the player's border; bars stay dark | A tidy, TV-style border glow |
-| Follow the picture | Light leaves the picture itself and spills into the bars | The original X Ambient look |
+| Along the player (default) | The frame is stretched over the player area; light leaves the player's border; bars stay dark | A tidy, TV-style border glow |
+| Along the picture | Light leaves the picture itself and spills into the bars | The original X Ambient look |
 
 ### 4. Opening settings
 
@@ -171,7 +174,7 @@ Vertical videos inside a wide player have letterbox bars on both sides — that'
 | Enabled (启用) | On | On / Off | Master switch |
 | Glow on card hover (悬停卡片时发光) | On | On / Off | Home, search, related, dynamics, space, live cards |
 | Player ambient light (播放器氛围光) | On | On / Off | Players on video pages and live rooms |
-| Player light source (播放器光源) | Fill the player | Fill the player / Follow the picture | See *Light-source mode* above |
+| Light-strip position (灯带位置) | Along the player | Along the player / Along the picture | See *Light-strip position* above |
 | Follow video colours (跟随视频颜色) | On | On / Off | When off, colours update only on switch, pause and seek — saves power |
 | Lighting area (光照范围) | Whole page | Whole page / Around the media | *Around the media* lights only near the current card or player |
 | Intensity (强度) | 65% | 0–100% | Opacity of the light |

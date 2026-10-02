@@ -2,6 +2,12 @@
 
 ## Chrome 扩展 / Chrome extension
 
+### 0.1.2 — 2026-10-02
+- 修复：浅色主题下「贴着画面」模式看不到效果——黑边是纯黑，正片叠底（multiply）无法把它照亮。现在为黑边单独叠加一层滤色（screen）光，竖屏视频两侧的黑边在深浅主题下都会被照亮。
+- 改进：设置「播放器光源：铺满播放器 / 按画面实际位置」更名为「灯带位置：贴着播放器 / 贴着画面」，与宣传说法一致；弹窗中注明「竖屏 / 带黑边的视频最明显」，并提高了可读性。
+- Fix: "Along the picture" had no visible effect on light pages — letterbox bars are pure black and `multiply` can't light black. A dedicated `screen`-blended layer now lights the bars, so vertical videos' bars glow in both themes.
+- Improvement: the setting "Player light source: fill the player / follow the picture" is renamed "灯带位置 (light-strip position): along the player / along the picture" to match the docs and promo; the popup now says it's most visible on vertical / letterboxed videos.
+
 ### 0.1.1 — 2026-10-02
 - 修复：圆角的悬停预览视频四角露出未着色的白边——遮罩洞口现在按实际裁切元素的四个圆角绘制；悬停预览不再被当作「播放器」。
 - 修复：头像、图标、表情等小元素（小于 56px 或圆形）不再被挖洞保护，而是和页面其他部分一起着色，不再显得被「高亮」。
@@ -15,6 +21,12 @@
 - In-page settings panel (`Alt+Shift+B` or the popup button) plus toolbar popup; settings sync live across tabs.
 
 ## 油猴脚本 / Userscript
+
+### 0.1.2 — 2026-10-02
+- 修复：浅色主题下「贴着画面」模式看不到效果——黑边是纯黑，正片叠底（multiply）无法把它照亮。现在为黑边单独叠加一层滤色（screen）光，竖屏视频两侧的黑边在深浅主题下都会被照亮。
+- 改进：设置「播放器光源：铺满播放器 / 按画面实际位置」更名为「灯带位置：贴着播放器 / 贴着画面」，与宣传说法一致；弹窗中注明「竖屏 / 带黑边的视频最明显」，并提高了可读性。
+- Fix: "Along the picture" had no visible effect on light pages — letterbox bars are pure black and `multiply` can't light black. A dedicated `screen`-blended layer now lights the bars, so vertical videos' bars glow in both themes.
+- Improvement: the setting "Player light source: fill the player / follow the picture" is renamed "灯带位置 (light-strip position): along the player / along the picture" to match the docs and promo; the popup now says it's most visible on vertical / letterboxed videos.
 
 ### 0.1.1 — 2026-10-02
 - 修复：圆角的悬停预览视频四角露出未着色的白边——遮罩洞口现在按实际裁切元素的四个圆角绘制；悬停预览不再被当作「播放器」。

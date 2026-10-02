@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bilibili Ambient 氛围光
 // @namespace    https://github.com/mmnga/x-ambient
-// @version      0.1.1
+// @version      0.1.2
 // @description  悬停视频卡片时，让封面/预览的颜色柔和地照亮整个页面；播放页的播放器也会像 YouTube 氛围模式一样向四周发光。移植自 X Ambient。
 // @author       adapted from mmnga/x-ambient (MIT)
 // @license      MIT
@@ -310,6 +310,27 @@
   light.append(field);
   shadow.append(style, light);
   document.documentElement.append(host);
+
+  // Letterbox bars are black, and black × anything = black under "multiply". On light pages, a second layer
+  // blended with "screen" and masked to the bars lets the light reach them ("贴着画面" mode).
+  const barsHost = document.createElement("div");
+  barsHost.id = "bili-ambient-bars";
+  barsHost.setAttribute("aria-hidden", "true");
+  barsHost.style.cssText = host.style.cssText + "mix-blend-mode:screen;";
+  const barsShadow = barsHost.attachShadow({ mode: "open" });
+  const barsLight = document.createElement("div");
+  barsLight.className = "light";
+  const barsField = document.createElement("div");
+  barsField.className = "field";
+  const barsCanvas = document.createElement("canvas");
+  barsCanvas.className = "front";
+  barsField.append(barsCanvas);
+  barsLight.append(barsField);
+  barsShadow.append(style.cloneNode(true), barsLight);
+  document.documentElement.append(barsHost);
+  const barsContext = barsCanvas.getContext("2d");
+  let barsActive = false;
+  let darkTheme = true;
   const contexts = canvases.map((canvas) => canvas.getContext("2d"));
   const mosaic = document.createElement("canvas");
   mosaic.width = 144;
@@ -355,13 +376,49 @@
     for (const element of [document.documentElement, document.body]) {
       if (element) dark = Core.isDarkColor(getComputedStyle(element).backgroundColor, dark);
     }
+    darkTheme = dark;
     host.style.mixBlendMode = dark ? "screen" : "multiply";
+  }
+
+  function showLight(on) {
+    light.classList.toggle("visible", on);
+    barsLight.classList.toggle("visible", on && barsActive);
+  }
+
+  /** Bars = the player area minus the visible picture (left/right for portrait, top/bottom for ultrawide). */
+  function letterboxRects(area, picture) {
+    const rects = [];
+    const push = (left, top, right, bottom) => {
+      if (right - left > 2 && bottom - top > 2) rects.push({ left, top, width: right - left, height: bottom - top });
+    };
+    push(area.left, area.top, picture.left, area.bottom);
+    push(picture.right, area.top, area.right, area.bottom);
+    push(picture.left, area.top, picture.right, picture.top);
+    push(picture.left, picture.bottom, picture.right, area.bottom);
+    return rects;
+  }
+
+  function updateBars(view) {
+    let rects = [];
+    if (activeKind === "player" && settings.playerFit === "content" && !darkTheme && media[0]) {
+      const area = visibleRect(activeRoot, activeRoot.getBoundingClientRect(), 48, 16);
+      if (area) rects = letterboxRects(area, media[0].rect);
+    }
+    barsActive = rects.length > 0;
+    if (barsActive) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${view.width}" height="${view.height}" viewBox="0 0 ${view.width} ${view.height}">${rects.map((r) => `<rect x="${r.left}" y="${r.top}" width="${r.width}" height="${r.height}" fill="white"/>`).join("")}</svg>`;
+      barsLight.style.maskImage = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+      barsField.style.cssText = field.style.cssText;
+    }
+    barsLight.classList.toggle("visible", barsActive && light.classList.contains("visible"));
   }
 
   function applySettings(value) {
     settings = normalize(value);
-    host.style.setProperty("--ba-opacity", String(settings.intensity / 100));
-    host.style.setProperty("--ba-blur", `${settings.blur}px`);
+    for (const layer of [host, barsHost]) {
+      layer.style.setProperty("--ba-opacity", String(settings.intensity / 100));
+      layer.style.setProperty("--ba-blur", `${settings.blur}px`);
+    }
     panel?.sync();
     protectionKey = "";
     if (!eligible()) deactivate();
@@ -397,7 +454,7 @@
     projection = null;
     activeObserver.disconnect();
     stopFrames();
-    light.classList.remove("visible");
+    showLight(false);
   }
 
   function visibleRect(element, fullRect, minSize = 48, minIntersection = 16) {
@@ -611,6 +668,7 @@
     const source = { width: mosaic.width, height: Math.max(48, Math.min(144, Math.round(144 * bounds.height / bounds.width))) };
     projection = { size, source, target, strips: Core.buildRayProjection(source, target, size, (120 + settings.spread * 12) * scale) };
     updateTheme();
+    updateBars(view);
   }
 
   function paint(index) {
@@ -658,6 +716,12 @@
       }
       context.globalAlpha = 1;
     }
+    if (barsActive) {
+      if (barsCanvas.width !== canvas.width) barsCanvas.width = canvas.width;
+      if (barsCanvas.height !== canvas.height) barsCanvas.height = canvas.height;
+      barsContext.clearRect(0, 0, barsCanvas.width, barsCanvas.height);
+      barsContext.drawImage(canvas, 0, 0);
+    }
     return drawn;
   }
 
@@ -697,7 +761,7 @@
     bounds = Core.unionRects(media.map((item) => item.rect));
     host.dataset.mediaCount = String(media.length);
     if (!media.length || !bounds?.width || !bounds.height) {
-      light.classList.remove("visible");
+      showLight(false);
       stopFrames();
       return;
     }
@@ -708,9 +772,9 @@
         canvases[front].classList.remove("front");
         canvases[back].classList.add("front");
         front = back;
-        light.classList.add("visible");
+        showLight(true);
       }
-    } else if (paint(front)) light.classList.add("visible");
+    } else if (paint(front)) showLight(true);
     startFrames();
   }
 
@@ -763,7 +827,7 @@
         activeKind = "";
         activeObserver.disconnect();
         stopFrames();
-        light.classList.remove("visible");
+        showLight(false);
       }
       return;
     }
@@ -874,8 +938,8 @@
         <label><span class="row-label">启用</span><input type="checkbox" data-key="enabled"></label>
         <label><span class="row-label">悬停卡片时发光</span><input type="checkbox" data-key="cards"></label>
         <label><span class="row-label">播放器氛围光</span><input type="checkbox" data-key="player"></label>
-        <label><span class="row-label">播放器光源</span>
-          <select data-key="playerFit"><option value="edge">铺满播放器</option><option value="content">按画面实际位置</option></select></label>
+        <label title="竖屏或带黑边的视频最明显"><span class="row-label">灯带位置</span>
+          <select data-key="playerFit"><option value="edge">贴着播放器</option><option value="content">贴着画面（照进黑边）</option></select></label>
         <label><span class="row-label">跟随视频颜色</span><input type="checkbox" data-key="animateVideo"></label>
         <label><span class="row-label">光照范围</span>
           <select data-key="scope"><option value="page">整个页面</option><option value="post">仅媒体周围</option></select></label>
@@ -948,6 +1012,7 @@
     for (const remove of removers) remove();
     panel.close();
     host.remove();
+    barsHost.remove();
   }
   globalThis.__biliAmbientDispose = dispose;
   globalThis.__biliAmbientPanel = panel;

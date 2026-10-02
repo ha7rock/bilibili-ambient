@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bilibili Ambient 氛围光",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "悬停视频卡片时，让封面和预览的颜色柔和地照亮整个页面；播放页的播放器也会向四周发光。",
   "permissions": ["storage"],
   "icons": { "16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" },
